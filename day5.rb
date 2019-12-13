@@ -9,7 +9,7 @@ def load_data(intcode, position, mode = 0)
   end
 end
 
-def intcode_process(intcode, input)
+def intcode_process(intcode, input, mode = nil)
   current_position = 0
 
   loop do
@@ -17,23 +17,47 @@ def intcode_process(intcode, input)
 
     case instruction.opcode
     when 1
-      value1 = load_data(intcode, current_position+1, instruction.first_parameter_mode)
-      value2 = load_data(intcode, current_position+2, instruction.second_parameter_mode)
+      value1 = load_data(intcode, current_position+1, mode || instruction.first_parameter_mode)
+      value2 = load_data(intcode, current_position+2, mode || instruction.second_parameter_mode)
 
       intcode[intcode[current_position+3]] = value1 + value2
-      current_position += 4
+      current_position += 4 unless mode
     when 2
-      value1 = load_data(intcode, current_position+1, instruction.first_parameter_mode)
-      value2 = load_data(intcode, current_position+2, instruction.second_parameter_mode)
+      value1 = load_data(intcode, current_position+1, mode || instruction.first_parameter_mode)
+      value2 = load_data(intcode, current_position+2, mode || instruction.second_parameter_mode)
 
-      intcode[intcode[current_position+3]] = value1 * value2
-      current_position += 4
+      intcode[load_data(intcode[current_position+3], mode || 0)] = value1 * value2
+      current_position += 4 unless mode
     when 3
-      intcode[intcode[current_position+1]] = input
-      current_position += 2
+      intcode[load_data(intcode[current_position+1], mode || 0)] = input
+      current_position += 2 unless mode
     when 4
-      puts load_data(intcode, current_position+1, 0)
-      current_position += 2
+      puts load_data(intcode, current_position+1, mode || 0)
+      current_position += 2 unless mode
+    when 5 # jump-if-true
+      value1 = load_data(intcode, current_position+1, 1)
+      value2 = load_data(intcode, current_position+2, 1)
+
+      current_position = value2 unless value1.zero?
+    when 6 # jump-if-false
+      value1 = load_data(intcode, current_position+1, 1)
+      value2 = load_data(intcode, current_position+2, 1)
+
+      current_position = value2 if value1.zero?
+    when 7
+      value1 = load_data(intcode, current_position+1, 1)
+      value2 = load_data(intcode, current_position+2, 1)
+      value3 = load_data(intcode, current_position+2, 0)
+
+      intcode[value3] = value1 < value2 ? 1 : 0
+      current_position += 3 unless mode
+    when 8
+      value1 = load_data(intcode, current_position+1, 1)
+      value2 = load_data(intcode, current_position+2, 1)
+      value3 = load_data(intcode, current_position+2, 0)
+
+      intcode[value3] = value1 == value2 ? 1 : 0
+      current_position += 3 unless mode
     when 99
       break
     end

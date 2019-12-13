@@ -27,5 +27,15 @@ RSpec.describe do
       end
     end
   end
+
+  describe '.intcode_process' do
+    subject { intcode_process(intcode, input, mode) }
+
+    context 'case 1' do
+      let(:intcode) { [3,9,8,9,10,9,4,9,99,-1,8] }
+      let(:input) { 8 }
+
+    end
+  end
 end
 
