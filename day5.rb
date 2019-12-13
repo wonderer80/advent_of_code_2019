@@ -32,12 +32,41 @@ def intcode_process(intcode, input)
       intcode[intcode[current_position+1]] = input
       current_position += 2
     when 4
-      puts load_data(intcode, current_position+1, 0)
+      puts load_data(intcode, current_position+1, instruction.first_parameter_mode)
       current_position += 2
+    when 5 # jump-if-true
+      value1 = load_data(intcode, current_position+1, instruction.first_parameter_mode)
+      value2 = load_data(intcode, current_position+2, instruction.second_parameter_mode)
+
+      unless value1.zero?
+        current_position = value2
+      else
+        current_position += 3
+      end
+    when 6 # jump-if-false
+      value1 = load_data(intcode, current_position+1, instruction.first_parameter_mode)
+      value2 = load_data(intcode, current_position+2, instruction.second_parameter_mode)
+
+      if value1.zero?
+        current_position = value2
+      else
+        current_position += 3
+      end
+    when 7
+      value1 = load_data(intcode, current_position+1, instruction.first_parameter_mode)
+      value2 = load_data(intcode, current_position+2, instruction.second_parameter_mode)
+
+      intcode[intcode[current_position+3]] = value1 < value2 ? 1 : 0
+      current_position += 4
+    when 8
+      value1 = load_data(intcode, current_position+1, instruction.first_parameter_mode)
+      value2 = load_data(intcode, current_position+2, instruction.second_parameter_mode)
+
+      intcode[intcode[current_position+3]] = value1 == value2 ? 1 : 0
+      current_position += 4
     when 99
       break
     end
-
   end
 
   intcode
